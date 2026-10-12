@@ -27,7 +27,9 @@ const fixture = await readFile('tests/fixtures/upload.html');
 const fixtureJS = await readFile('tests/fixtures/fixture.js');
 const server = createServer((req, res) => {
   res.setHeader('Content-Type', req.url === '/fixture.js' ? 'text/javascript' : 'text/html');
-  if (req.url === '/fixture.js') res.end(fixtureJS);
+  // Let document_start discovery finish before the page creates its roots.
+  // This reproduces a slow external script on CI instead of relying on timing.
+  if (req.url === '/fixture.js') setTimeout(() => res.end(fixtureJS), 200);
   else if (req.url === '/frame')
     res.end(
       '<!doctype html><title>Embedded assignment</title><label>Embedded file <input id="embedded" type="file"></label>',

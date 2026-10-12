@@ -15,8 +15,14 @@ export class ShadowRootDiscovery {
   private readonly delayedPaths = new Set<ReturnType<typeof setTimeout>>();
   private timer: ReturnType<typeof setTimeout> | undefined;
   private scanning = false;
+  private documentRescanRequested = false;
   private stopped = false;
   private readonly observer: MutationObserver;
+  private readonly rescanDocument = () => {
+    if (this.stopped) return;
+    this.documentRescanRequested = true;
+    if (!this.scanning && this.timer === undefined) this.timer = setTimeout(() => this.scan(), 0);
+  };
 
   constructor(
     private readonly document: Document,
@@ -33,6 +39,8 @@ export class ShadowRootDiscovery {
       }
     });
     this.observer.observe(document, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', this.rescanDocument, { once: true });
+    document.defaultView?.addEventListener('load', this.rescanDocument, { once: true });
     this.enqueue(document);
   }
 
@@ -55,6 +63,9 @@ export class ShadowRootDiscovery {
   dispose(): void {
     this.stopped = true;
     this.observer.disconnect();
+    this.document.removeEventListener('DOMContentLoaded', this.rescanDocument);
+    this.document.defaultView?.removeEventListener('load', this.rescanDocument);
+    this.documentRescanRequested = false;
     if (this.timer !== undefined) clearTimeout(this.timer);
     for (const timer of this.delayedPaths) clearTimeout(timer);
     this.delayedPaths.clear();
@@ -107,6 +118,15 @@ export class ShadowRootDiscovery {
         this.jobs.shift();
         this.queued.delete(job.root);
       }
+    }
+    if (
+      !this.stopped &&
+      this.documentRescanRequested &&
+      !this.queued.has(this.document) &&
+      this.jobs.length < MAX_SCAN_JOBS
+    ) {
+      this.documentRescanRequested = false;
+      this.enqueue(this.document);
     }
     this.scanning = false;
     if (!this.stopped && this.jobs.length) this.timer = setTimeout(() => this.scan(), 0);
