@@ -35,6 +35,7 @@ await Promise.all([
     shell.replace(placeholder, () => privacyBody.trim()),
   ),
   writeFile(path.join(outputDirectory, '.nojekyll'), ''),
+  cp(path.join(sourceDirectory, 'sitemap.xml'), path.join(outputDirectory, 'sitemap.xml')),
   cp(path.join(sourceDirectory, 'assets'), path.join(outputDirectory, 'assets'), {
     recursive: true,
   }),

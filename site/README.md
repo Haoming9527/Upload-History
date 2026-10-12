@@ -16,6 +16,7 @@ Open http://127.0.0.1:4173/Upload-History/. After editing, build again and refre
 ## Structure
 
 - `index.html`: homepage shell.
+- `sitemap.xml`: public page URLs, copied into the build; update when adding pages.
 - `partials/`: assignment demo, how-it-works, installation, and FAQ sections.
 - `assets/css/`: shared, homepage, demo, and privacy styles.
 - `assets/js/`: sample data, archive interaction, and installation clipboard control.
@@ -30,5 +31,6 @@ Set the repository's **Settings → Pages → Source** to **GitHub Actions**, th
 
 - Home: https://haoming9527.github.io/Upload-History/
 - Privacy: https://haoming9527.github.io/Upload-History/privacy.html
+- Sitemap: https://haoming9527.github.io/Upload-History/sitemap.xml
 
 The installation links currently point to the local-build guide. When the Chrome Web Store listing is live, replace the primary installation links with the verified listing URL and update the availability copy. Do not invent a store URL or display an available-to-install claim before publication.
