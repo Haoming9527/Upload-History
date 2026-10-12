@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Upload History test classroom</title>
+    <style>
+      body {
+        font: 16px system-ui;
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 24px;
+        color: #172644;
+        background: #f6f8fc;
+      }
+      section {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ccd5e7;
+        border-radius: 12px;
+      }
+      label {
+        display: block;
+        margin: 12px 0;
+      }
+      #drop {
+        padding: 40px;
+        border: 2px dashed #275cda;
+      }
+      button {
+        padding: 8px 14px;
+      }
+      iframe {
+        width: 100%;
+        height: 90px;
+        border: 1px solid #ccd5e7;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Assignment upload test</h1>
+    <p>
+      A local fixture for testing file recovery. Files stay in this browser; this page has no upload
+      server.
+    </p>
+    <section>
+      <label>Single attachment <input id="single" type="file" /></label
+      ><label>Multiple attachments <input id="multiple" type="file" multiple /></label>
+    </section>
+    <section>
+      <div id="drop">Drop files here</div>
+      <output id="dropped"></output>
+    </section>
+    <section>
+      <button id="add" type="button">Add another upload control</button>
+      <div id="dynamic"></div>
+    </section>
+    <section>
+      <h2>Shadow controls</h2>
+      <div id="open-host"></div>
+      <div id="closed-host"></div>
+    </section>
+    <section>
+      <h2>Embedded uploader</h2>
+      <iframe id="frame" src="/frame"></iframe>
+    </section>
+    <script src="/fixture.js"></script>
+  </body>
+</html>

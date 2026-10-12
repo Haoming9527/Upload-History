@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a problem with history, settings, storage, or recovery.
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use synthetic data and follow SECURITY.md for vulnerabilities. Do not upload your Chrome profile or real documents.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Chrome version, extension version, and operating system.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and reproduction
+      description: Explain the expected and actual result, a minimal harmless reproduction, and any visible error.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Optional logs or screenshots after removing filenames, private site addresses, and personal information.

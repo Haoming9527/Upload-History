@@ -1,0 +1,53 @@
+# Dependencies and generated extension builds
+node_modules/
+/.wxt/
+/.output/
+/dist/
+/build/
+
+# Browser test profiles, downloads, screenshots, and reports
+/artifacts/
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/blob-report/
+/coverage/
+/.nyc_output/
+
+# Tool caches and temporary files
+.cache/
+.vite/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+/tmp/
+/temp/
+*.log
+*.swp
+*.swo
+*~
+
+# Local environment files (keep documented templates)
+.env*
+!.env.example
+!.env.*.example
+
+# Locally packaged extensions and signing keys
+/*.zip
+/*.crx
+/*.pem
+/*.key
+
+# Personal IDE configuration (allow portable team configuration)
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Operating-system metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,41 @@
+{
+  "name": "upload-history",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Remember and recover files you attach to websites. Local, private, and open source.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "typecheck": "wxt prepare && tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "node scripts/e2e.mjs",
+    "postinstall": "wxt prepare",
+    "check": "npm run typecheck && npm test && npm run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "idb": "^8.0.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.24",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@wxt-dev/module-react": "^1.1.3",
+    "fake-indexeddb": "^6.2.4",
+    "playwright": "^1.56.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "wxt": "^0.21.4"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Upload History privacy policy</title>
+    <style>
+      body {
+        font:
+          16px/1.65 system-ui,
+          sans-serif;
+        color: #172644;
+        background: #f6f8fc;
+        max-width: 740px;
+        margin: 48px auto;
+        padding: 0 24px;
+      }
+      h1 {
+        line-height: 1.2;
+      }
+      h2 {
+        font-size: 20px;
+        margin-top: 32px;
+      }
+      a {
+        color: #275cda;
+      }
+      small {
+        color: #62718b;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Upload History privacy policy</h1>
+    <small>Effective October 12, 2026 · version 0.1.0</small>
+    <p>
+      Upload History remembers files you select or drop on websites and, when enabled, keeps a local
+      copy for later recovery. Recording starts only after you consent and grant website access.
+    </p>
+    <h2>What the extension stores</h2>
+    <p>
+      Records include the filename, type, size, last-modified time, capture time, website and frame
+      origin, page title, sanitized page location, save status, and retention settings. Save copies
+      mode also reads and stores the selected file's bytes and an integrity digest. Logs only mode
+      does not read or store file contents. Disabled sites are not recorded. Incognito recording is
+      disabled.
+    </p>
+    <p>
+      URL credentials, query strings and fragments are removed. A path or page title can still
+      contain personal information. The extension records selection or dropping of a file.
+    </p>
+    <h2>Where information goes</h2>
+    <p>
+      Your archive stays in the current Chrome profile. The extension has no account, backend, cloud
+      sync, analytics, advertising, or developer-operated data collection endpoint. We do not
+      receive or sell your files or history. Normal website uploads continue independently. Chrome
+      Web Store and browser services follow their own policies.
+    </p>
+    <h2>Local protection</h2>
+    <p>
+      Archive metadata and file chunks are encrypted with AES-GCM. The encryption key is stored in
+      the same browser profile, without an additional password. Some storage-management fields,
+      including record sizes, expiry times and statuses, remain unencrypted. Recording preferences
+      and site rules are stored in Chrome's local extension settings. This is not protection against
+      someone who can access your browser profile, compromised extension code, or malware.
+    </p>
+    <h2>Retention and deletion</h2>
+    <p>
+      New records expire after 90 days by default. You can change retention or Keep a record until
+      you delete it. Cleanup runs when the browser has an opportunity, not at an exact guaranteed
+      time. Kept records count toward the storage budget. Existing copies are not automatically
+      removed to make space for new ones. You can delete individual records, selected records, or
+      all history in the extension.
+    </p>
+    <p>
+      Deletion removes the extension's records and stored contents but is not a forensic
+      secure-erasure guarantee. Files you download are separate and must be deleted separately.
+      Removing the extension or browser profile can permanently remove the archive and its
+      encryption key. This extension is not a backup service.
+    </p>
+    <h2>Your controls</h2>
+    <p>
+      You can pause recording, choose logs only, disable specific sites, or revoke website
+      permissions. Pending copies are cancelled when recording is stopped. Revoking access does not
+      delete existing history; use Delete all history for that.
+    </p>
+    <h2>Limited use and support</h2>
+    <p>
+      Information is used only to provide the file-history and recovery features described here.
+      Upload History's use of information follows the Chrome Web Store User Data Policy, including
+      its Limited Use requirements.
+    </p>
+    <p>
+      For questions or a security report, use the
+      <a href="https://github.com/Haoming9527/Upload-History">project repository</a>. Do not include
+      private files, browsing history, or personal details in public issues.
+    </p>
+  </body>
+</html>
