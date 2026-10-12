@@ -1,0 +1,37 @@
+.policy {
+  max-width: 850px;
+  padding-top: 72px;
+  padding-bottom: 100px;
+}
+.back-link {
+  display: inline-block;
+  margin-bottom: 36px;
+}
+.policy h1 {
+  max-width: 650px;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  margin-bottom: 18px;
+}
+.policy small {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 40px;
+}
+.policy h2 {
+  font-size: 1.5rem;
+  margin-top: 42px;
+  margin-bottom: 14px;
+}
+.policy p {
+  margin-bottom: 20px;
+  max-width: 72ch;
+}
+.policy article a {
+  text-decoration: underline;
+}
+@media (max-width: 640px) {
+  .policy {
+    padding-top: 36px;
+    padding-bottom: 60px;
+  }
+}

@@ -51,3 +51,9 @@ node_modules/
 ._*
 Thumbs.db
 Desktop.ini
+
+/.impeccable
+/site/.impeccable
+/site/.impeccable/*
+/site/DESIGN.md
+PRODUCT.md

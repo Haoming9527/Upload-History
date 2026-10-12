@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Remember the files you attach to websites. Search your upload history and recover saved copies. Free, open source, and stored locally in Chrome."
+    />
+    <meta name="theme-color" content="#275cda" />
+    <meta property="og:title" content="Upload History — Remember what you attached." />
+    <meta
+      property="og:description"
+      content="A little memory for the files you share. Find your attachments and recover saved copies, right in your browser."
+    />
+    <meta property="og:type" content="website" />
+    <title>Upload History — Remember what you attached.</title>
+    <link rel="icon" href="assets/icon.png" type="image/png" />
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/home.css" />
+    <link rel="stylesheet" href="assets/css/demo.css" />
+    <script type="module" src="assets/js/main.js"></script>
+  </head>
+  <body>
+    <!--
+      THESIS: Submit an assignment and see its recoverable copy appear in the adjacent history.
+      OWN-WORLD: Existing cobalt blue, navy type, white form and the blue document mark.
+      STORY: Choose a sample or local file, submit, see it saved with a time, then recover it.
+      FIRST VIEWPORT: Large left-aligned promise and supporting copy above an assignment form;
+      the blue history panel starts empty and gains a saved record when the form is submitted.
+      FORM: User-requested assignment submission demo; extension of seed 6df8b4c5, code-first.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+    -->
+    <a class="skip-link" href="#main">Skip to content</a>
+    <svg class="svg-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" /></symbol>
+        <symbol id="i-external" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></symbol>
+        <symbol id="i-download" viewBox="0 0 24 24">
+          <path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 4 4" />
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path d="M14 3H6v18h12V7zM14 3v5h4M9 12h6M9 16h4" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></symbol>
+        <symbol id="i-pin" viewBox="0 0 24 24">
+          <path d="M8 3h8l-1 6 4 4v2H5v-2l4-4zM12 15v6" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5" y="10" width="14" height="11" rx="2" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+        </symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24">
+          <rect x="8" y="8" width="12" height="13" rx="2" />
+          <path d="M16 8V3H3v13h5" />
+        </symbol>
+        <symbol id="i-github" viewBox="0 0 24 24">
+          <path
+            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-4a3.5 3.5 0 0 0-1-2.7c3.3-.4 6.8-1.6 6.8-7.3A5.7 5.7 0 0 0 20.3 4a5.3 5.3 0 0 0-.1-4s-1.3-.4-4.2 1.5a14.4 14.4 0 0 0-8 0C5.1-.4 3.8 0 3.8 0a5.3 5.3 0 0 0-.1 4A5.7 5.7 0 0 0 2.2 8c0 5.7 3.5 6.9 6.8 7.3A3.5 3.5 0 0 0 8 18v4"
+            transform="translate(1 2) scale(.9)"
+          />
+        </symbol>
+      </defs>
+    </svg>
+    <header class="site-header wrap">
+      <a class="brand" href="./" aria-label="Upload History home"
+        ><img src="assets/icon.png" width="38" height="38" alt="" /><span
+          >Upload<span class="brand-light">History</span></span
+        ></a
+      >
+      <nav aria-label="Main navigation">
+        <a class="desktop-link" href="#how-it-works">How it works</a>
+        <a class="desktop-link" href="privacy.html">Privacy</a>
+        <a class="button button-small" href="https://github.com/Haoming9527/Upload-History"
+          ><svg class="icon" aria-hidden="true"><use href="#i-github" /></svg>GitHub</a
+        >
+      </nav>
+    </header>
+    <main id="main">
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <div class="hero-intro">
+          <h1 id="hero-title">Remember what<br />you <span>attached.</span></h1>
+          <div class="hero-copy">
+            <p>That resume. Last week’s assignment. The file you thought you’d kept.</p>
+            <p class="muted">
+              Give your browser a memory for attachments, with a private history and copies you can
+              recover.
+            </p>
+            <a class="button button-primary" href="#get-started"
+              >Get Upload History <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg
+            ></a>
+            <span class="availability">Free &amp; open source · For desktop Chrome</span>
+          </div>
+        </div>
+        <!-- include: partials/assignment-demo.html -->
+      </section>
+      <!-- include: partials/how-it-works.html -->
+      <!-- include: partials/get-started.html -->
+    </main>
+    <footer class="site-footer wrap">
+      <a class="brand footer-brand" href="./"
+        ><img src="assets/icon.png" width="28" height="28" alt="" />Upload History</a
+      >
+      <p>Your files. Your device. Your history.</p>
+      <nav aria-label="Footer">
+        <a href="https://github.com/Haoming9527/Upload-History">GitHub</a
+        ><a href="privacy.html">Privacy</a
+        ><a href="https://github.com/Haoming9527/Upload-History/issues">Support</a>
+      </nav>
+    </footer>
+  </body>
+</html>

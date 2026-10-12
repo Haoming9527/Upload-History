@@ -1,7 +1,7 @@
 import { type AppState, type RecordingMode } from '../../../shared/types';
 import { type Action } from '../../lib/types';
 import { Brand, Icon } from '../../components/Icons';
-import { pageUrl, displaySite } from '../../lib/format';
+import { pageUrl, displaySite, dateTime, shortDate } from '../../lib/format';
 import { Onboarding, AccessNotice } from '../onboarding/Onboarding';
 import { request } from '../../../shared/messages';
 import { FileGlyph, Status, StorageMeter } from '../../components/RecordPresentation';
@@ -120,7 +120,16 @@ export function Popup({ state, action, busy }: { state: AppState; action: Action
                     >
                       <strong title={record.name}>{record.name}</strong>
                       <span>{displaySite(record.site)}</span>
-                      <Status record={record} />
+                      <div className="recent-meta">
+                        <Status record={record} />
+                        <time
+                          dateTime={new Date(record.capturedAt).toISOString()}
+                          aria-label={`Attached ${dateTime(record.capturedAt)}`}
+                          title={dateTime(record.capturedAt)}
+                        >
+                          {shortDate(record.capturedAt)}
+                        </time>
+                      </div>
                     </a>
                     {record.status === 'saved' && (
                       <button

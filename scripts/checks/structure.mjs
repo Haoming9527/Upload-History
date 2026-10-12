@@ -20,7 +20,7 @@ async function sourceFiles(directory, recursive = true) {
 const files = (
   await Promise.all([
     sourceFiles('.', false),
-    ...['src', 'entrypoints', 'scripts', 'tests', 'public'].map((directory) =>
+    ...['src', 'entrypoints', 'scripts', 'tests', 'public', 'site'].map((directory) =>
       sourceFiles(directory),
     ),
   ])

@@ -1,0 +1,89 @@
+<div class="demo-heading" id="demo">
+  <p>Attach. Submit. <span class="muted">See it remembered.</span></p>
+  <button class="reset-demo" id="reset-demo" type="button">Reset demo</button>
+</div>
+<div class="assignment-demo" aria-label="Assignment upload demonstration">
+  <form class="assignment-form" id="assignment-form">
+    <div class="assignment-heading">
+      <h2>Submit your assignment</h2>
+      <span>Example classroom</span>
+    </div>
+    <p class="assignment-description">
+      Try an assignment file of your own, or use the sample. Watch your saved copy appear in Upload
+      History.
+    </p>
+    <div class="drop-zone" id="drop-zone">
+      <svg class="upload-icon icon" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M12 16V4m-5 5 5-5 5 5M4 15v5h16v-5" />
+      </svg>
+      <h3>Drop your assignment here</h3>
+      <p>Any file type · up to 10 MiB</p>
+      <input
+        class="sr-only"
+        id="assignment-file"
+        type="file"
+        aria-label="Choose assignment file"
+        tabindex="-1"
+      />
+      <div class="file-choices">
+        <button class="button button-small" id="choose-file" type="button">Choose a file</button>
+        <button class="sample-button" id="use-sample" type="button">Use a sample assignment</button>
+      </div>
+    </div>
+    <div class="selected-file" id="selected-file" hidden>
+      <svg class="icon" aria-hidden="true"><use href="#i-file" /></svg>
+      <div><strong id="selected-name"></strong><span id="selected-size"></span></div>
+      <button id="remove-file" type="button" aria-label="Remove selected assignment">Remove</button>
+    </div>
+    <div class="assignment-actions">
+      <p id="form-feedback" role="status">Choose a file to get started.</p>
+      <button class="button button-primary" id="submit-assignment" type="submit" disabled>
+        Submit assignment <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+      </button>
+    </div>
+  </form>
+  <aside class="demo-history" aria-labelledby="demo-history-title">
+    <div class="history-heading">
+      <h2 id="demo-history-title">
+        <img src="assets/icon.png" width="28" height="28" alt="" />Upload History
+      </h2>
+      <span id="saved-count">0 saved</span>
+    </div>
+    <div class="history-empty" id="history-empty">
+      <svg class="icon" aria-hidden="true"><use href="#i-file" /></svg>
+      <h3>Your next upload,<br />remembered.</h3>
+      <p>Submit an assignment and its saved copy will appear here.</p>
+    </div>
+    <ul class="saved-records" id="saved-records" aria-label="Saved assignments" hidden></ul>
+    <p class="history-feedback" id="history-feedback" role="status"></p>
+    <p class="history-storage">
+      <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>Saved in this tab only
+    </p>
+  </aside>
+</div>
+<template id="saved-record-template">
+  <li class="saved-record">
+    <div class="saved-record-top">
+      <svg class="icon" aria-hidden="true"><use href="#i-file" /></svg
+      ><span class="copy-saved"
+        ><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg>Copy saved</span
+      >
+    </div>
+    <strong class="saved-name"></strong>
+    <span class="saved-meta"></span>
+    <time class="saved-time"></time>
+    <button class="button saved-download" type="button">
+      <svg class="icon" aria-hidden="true"><use href="#i-download" /></svg>Download saved copy
+    </button>
+  </li>
+</template>
+<p class="demo-disclosure">
+  Interactive demo. Files stay in this tab and are cleared when you reset or refresh. Nothing is
+  uploaded to a server.
+</p>
+<noscript
+  ><p class="noscript-note">
+    Enable JavaScript to try the assignment demo. Installation instructions and the privacy policy
+    work without it.
+  </p></noscript
+>
