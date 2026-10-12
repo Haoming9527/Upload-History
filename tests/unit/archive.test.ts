@@ -1,8 +1,8 @@
 import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Archive, RECORD_ALLOWANCE } from '../src/storage/archive';
-import { CHUNK_BYTES, type ArchiveRecord } from '../src/shared/types';
+import { Archive, RECORD_ALLOWANCE } from '../../src/storage/archive';
+import { CHUNK_BYTES, type ArchiveRecord } from '../../src/shared/types';
 
 const LIMITS = { maxFileBytes: 50 * 1024 * 1024, budgetBytes: 500 * 1024 * 1024 };
 const instances: Archive[] = [];

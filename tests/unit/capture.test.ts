@@ -4,16 +4,16 @@ import {
   MAX_QUEUED_FILES,
   MAX_QUEUE_AGE_MS,
   type CaptureItem,
-} from '../src/capture/pipeline';
-import { captureMetadata, capturePolicyChanged } from '../src/capture/metadata';
+} from '../../src/capture/pipeline';
+import { captureMetadata, capturePolicyChanged } from '../../src/capture/metadata';
 import {
   CHUNK_BYTES,
   DEFAULT_SETTINGS,
   type ArchiveRecord,
   type Message,
   type RecordingMode,
-} from '../src/shared/types';
-import { fromBase64 } from '../src/shared/messages';
+} from '../../src/shared/types';
+import { fromBase64 } from '../../src/shared/messages';
 
 function item(bytes = new Uint8Array([1, 2, 3])): CaptureItem {
   const file = new File([bytes], 'assignment.pdf', { type: 'application/pdf', lastModified: 123 });

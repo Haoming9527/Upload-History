@@ -12,6 +12,8 @@ The project helps people remember file attachments after successful submission. 
 
 Keep changes focused. Add regression coverage for meaningful bugs, update documentation when behavior changes, and retain the package lockfile. Do not commit `.output`, `artifacts`, downloaded test files, private screenshots, or browser profiles.
 
+Keep authored code files at or below 500 lines. Split by responsibility and preserve clear interfaces instead of compressing code to meet the limit. `npm run check:structure` enforces this for source, styles, scripts, and tests; it also runs as part of `npm run check` in CI. Generated bundles and the dependency lockfile are excluded.
+
 ## Design constraints
 
 - Keep one purpose: attachment history and local file recovery.

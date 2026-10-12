@@ -23,11 +23,15 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run zip
+      - name: Verify extension packages exist
+        run: ls -lh .output/*.zip
       - name: Upload extension packages
         uses: actions/upload-artifact@v4
         with:
           name: upload-history-packages
           path: .output/*.zip
+          # WXT writes packages inside a dot-prefixed directory.
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
       - name: Upload synthetic screenshots

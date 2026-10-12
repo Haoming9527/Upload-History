@@ -1,4 +1,6 @@
-import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { archiveKey, encrypt, decrypt, encryptRecord, readRecord, digest } from './crypto';
+import type { ArchiveDB, StoredRecord } from './schema';
+import { openDB, type IDBPDatabase } from 'idb';
 import {
   CHUNK_BYTES,
   type ArchiveLimits,
@@ -11,43 +13,12 @@ import {
 // Budget accounting is conservative, not a measurement of IndexedDB's disk files.
 export const RECORD_ALLOWANCE = 16 * 1024;
 const MAX_RECORDS = 10_000;
-const MAX_METADATA_BYTES = 14 * 1024;
 const CHUNK_ALLOWANCE = 64;
 const DAY = 86_400_000;
-
-interface Cipher {
-  iv: Uint8Array<ArrayBuffer>;
-  data: ArrayBuffer;
-}
-interface StoredRecord {
-  id: string;
-  generation: string;
-  metadata: Cipher;
-  status: ArchiveRecord['status'];
-  size: number;
-  expiresAt: number | null;
-  kept: boolean;
-  nextChunk: number;
-  receivedBytes: number;
-  chargedBytes: number;
-  reservedBytes: number;
-}
-interface StoredChunk extends Cipher {
-  id: string;
-  index: number;
-  size: number;
-}
-interface ArchiveDB extends DBSchema {
-  keys: { key: string; value: CryptoKey };
-  records: { key: string; value: StoredRecord };
-  chunks: { key: [string, number]; value: StoredChunk; indexes: { 'by-record': string } };
-}
 
 // The background worker owns persistence. This also serializes multiple instances
 // in one worker (including tests), without holding an IDB transaction over crypto.
 const queues = new Map<string, Promise<void>>();
-const encoder = new TextEncoder();
-const decoder = new TextDecoder('utf-8', { fatal: true });
 
 function buffer(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
   const copy = new Uint8Array(bytes.byteLength);
@@ -61,11 +32,6 @@ function validCount(value: number): boolean {
 
 function chunkCost(size: number): number {
   return size + Math.ceil(size / CHUNK_BYTES) * CHUNK_ALLOWANCE;
-}
-
-async function digest(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
-  const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
-  return Array.from(hash, (value) => value.toString(16).padStart(2, '0')).join('');
 }
 
 export class Archive {
@@ -105,111 +71,6 @@ export class Archive {
     return this.database;
   }
 
-  private async key(db: IDBPDatabase<ArchiveDB>): Promise<CryptoKey> {
-    const existing = await db.get('keys', 'archive');
-    if (existing) {
-      if (
-        existing.type !== 'secret' ||
-        existing.extractable ||
-        existing.algorithm.name !== 'AES-GCM'
-      ) {
-        throw new Error('The archive encryption key is invalid. Clear the archive to start again.');
-      }
-      return existing;
-    }
-    if ((await db.count('records')) || (await db.count('chunks'))) {
-      throw new Error(
-        'The archive encryption key is missing. Existing copies cannot be recovered. Clear the archive to start again.',
-      );
-    }
-    const generated = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
-      'encrypt',
-      'decrypt',
-    ]);
-    const tx = db.transaction(['keys', 'records', 'chunks'], 'readwrite');
-    const raced = await tx.objectStore('keys').get('archive');
-    if (raced) {
-      await tx.done;
-      return raced;
-    }
-    if ((await tx.objectStore('records').count()) || (await tx.objectStore('chunks').count())) {
-      tx.abort();
-      await tx.done.catch(() => undefined);
-      throw new Error('The archive encryption key is missing. Clear the archive to start again.');
-    }
-    await tx.objectStore('keys').put(generated, 'archive');
-    await tx.done;
-    return generated;
-  }
-
-  private async encrypt(
-    key: CryptoKey,
-    bytes: Uint8Array<ArrayBuffer>,
-    context: string,
-  ): Promise<Cipher> {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const data = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv, additionalData: encoder.encode(context) },
-      key,
-      bytes,
-    );
-    return { iv, data };
-  }
-
-  private async decrypt(
-    key: CryptoKey,
-    cipher: Cipher,
-    context: string,
-  ): Promise<Uint8Array<ArrayBuffer>> {
-    try {
-      return new Uint8Array(
-        await crypto.subtle.decrypt(
-          { name: 'AES-GCM', iv: cipher.iv, additionalData: encoder.encode(context) },
-          key,
-          cipher.data,
-        ),
-      );
-    } catch {
-      throw new Error(
-        'The saved archive data failed its integrity check. This copy cannot be recovered.',
-      );
-    }
-  }
-
-  private metadata(key: CryptoKey, record: ArchiveRecord, generation: string): Promise<Cipher> {
-    const bytes = encoder.encode(JSON.stringify(record));
-    if (bytes.length > MAX_METADATA_BYTES)
-      throw new Error('File details exceed the metadata limit.');
-    return this.encrypt(key, bytes, `upload-history:v1:record:${record.id}:${generation}`);
-  }
-
-  private async readRecord(key: CryptoKey, row: StoredRecord): Promise<ArchiveRecord> {
-    let record: ArchiveRecord;
-    try {
-      record = JSON.parse(
-        decoder.decode(
-          await this.decrypt(
-            key,
-            row.metadata,
-            `upload-history:v1:record:${row.id}:${row.generation}`,
-          ),
-        ),
-      ) as ArchiveRecord;
-    } catch {
-      throw new Error('The archive metadata failed its integrity check.');
-    }
-    if (
-      record.id !== row.id ||
-      record.size !== row.size ||
-      record.status !== row.status ||
-      record.expiresAt !== row.expiresAt ||
-      record.kept !== row.kept
-    ) {
-      throw new Error('The archive metadata does not match its storage index.');
-    }
-    return record;
-  }
-
   private summarize(rows: StoredRecord[]): ArchiveUsage {
     return rows.reduce<ArchiveUsage>(
       (usage, row) => ({
@@ -236,7 +97,7 @@ export class Archive {
     const ids: string[] = [];
     for (const row of await db.getAll('records')) {
       if (row.expiresAt !== null && row.expiresAt <= now && !row.kept) {
-        const record = await this.readRecord(key, row);
+        const record = await readRecord(key, row);
         if (!record.kept && record.expiresAt !== null && record.expiresAt <= now) ids.push(row.id);
       }
     }
@@ -259,7 +120,7 @@ export class Archive {
       )
         throw new Error('Invalid archive record or limits.');
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       await this.expire(db, key, Date.now());
       const rows = await db.getAll('records');
       if (rows.some((row) => row.id === record.id)) throw new Error('This capture already exists.');
@@ -287,7 +148,7 @@ export class Archive {
       const row: StoredRecord = {
         id: record.id,
         generation,
-        metadata: await this.metadata(key, record, generation),
+        metadata: await encryptRecord(key, record, generation),
         status: record.status,
         size: record.size,
         expiresAt: record.expiresAt,
@@ -323,7 +184,7 @@ export class Archive {
     const bytes = buffer(input);
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       const row = await this.pending(db, id, token);
       if (index !== row.nextChunk || !validCount(index))
         throw new Error('File chunks arrived out of order.');
@@ -332,11 +193,7 @@ export class Archive {
         bytes.byteLength === 0
       )
         throw new Error('The file chunk size does not match the selected file.');
-      const cipher = await this.encrypt(
-        key,
-        bytes,
-        `upload-history:v1:chunk:${id}:${token}:${index}`,
-      );
+      const cipher = await encrypt(key, bytes, `upload-history:v1:chunk:${id}:${token}:${index}`);
       await this.pending(db, id, token); // Expiry may have passed during encryption.
       const tx = db.transaction(['records', 'chunks'], 'readwrite');
       const current = await tx.objectStore('records').get(id);
@@ -379,7 +236,7 @@ export class Archive {
       const expected = Math.min(CHUNK_BYTES, row.size - offset);
       if (chunk.index !== index || chunk.size !== expected)
         throw new Error('The saved copy has invalid chunks.');
-      const plain = await this.decrypt(
+      const plain = await decrypt(
         key,
         chunk,
         `upload-history:v1:chunk:${row.id}:${row.generation}:${index}`,
@@ -394,14 +251,14 @@ export class Archive {
   finish(id: string, token: string): Promise<ArchiveRecord> {
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       const row = await this.pending(db, id, token);
-      const record = await this.readRecord(key, row);
+      const record = await readRecord(key, row);
       const bytes = await this.readBytes(db, key, row);
       record.sha256 = await digest(bytes);
       record.status = 'saved';
       delete record.failure;
-      const metadata = await this.metadata(key, record, row.generation);
+      const metadata = await encryptRecord(key, record, row.generation);
       await this.pending(db, id, token); // Hashing a large copy may cross its expiry.
       const tx = db.transaction('records', 'readwrite');
       const current = await tx.store.get(id);
@@ -422,11 +279,11 @@ export class Archive {
     row: StoredRecord,
     reason: string,
   ): Promise<void> {
-    const record = await this.readRecord(key, row);
+    const record = await readRecord(key, row);
     record.status = 'failed';
     record.failure = reason.slice(0, 240);
     delete record.sha256;
-    const metadata = await this.metadata(key, record, row.generation);
+    const metadata = await encryptRecord(key, record, row.generation);
     const tx = db.transaction(['records', 'chunks'], 'readwrite');
     const current = await tx.objectStore('records').get(row.id);
     if (!current || current.generation !== row.generation || current.status !== 'saving') {
@@ -452,17 +309,17 @@ export class Archive {
       const db = await this.db();
       const row = await db.get('records', id);
       if (!row || row.generation !== token || row.status !== 'saving') return;
-      await this.markFailed(db, await this.key(db), row, reason);
+      await this.markFailed(db, await archiveKey(db), row, reason);
     });
   }
 
   list(): Promise<ArchiveRecord[]> {
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       await this.expire(db, key, Date.now());
       const records = await Promise.all(
-        (await db.getAll('records')).map((row) => this.readRecord(key, row)),
+        (await db.getAll('records')).map((row) => readRecord(key, row)),
       );
       return records.sort((left, right) => right.capturedAt - left.capturedAt);
     });
@@ -471,12 +328,12 @@ export class Archive {
   download(id: string): Promise<DownloadData> {
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       await this.expire(db, key, Date.now());
       const row = await db.get('records', id);
       if (!row || row.status !== 'saved')
         throw new Error('No saved copy is available for this record.');
-      const record = await this.readRecord(key, row);
+      const record = await readRecord(key, row);
       const bytes = await this.readBytes(db, key, row);
       if ((await digest(bytes)) !== record.sha256)
         throw new Error('The saved copy failed its integrity check.');
@@ -508,11 +365,11 @@ export class Archive {
       if (!Number.isInteger(retentionDays) || retentionDays < 0 || retentionDays > 3650)
         throw new Error('Invalid retention period.');
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       await this.expire(db, key, Date.now());
       const row = await db.get('records', id);
       if (!row) throw new Error('This record is no longer available.');
-      const record = await this.readRecord(key, row);
+      const record = await readRecord(key, row);
       record.kept = kept;
       record.expiresAt =
         kept || retentionDays === 0 ? null : record.capturedAt + retentionDays * DAY;
@@ -524,7 +381,7 @@ export class Archive {
         ...row,
         kept,
         expiresAt: record.expiresAt,
-        metadata: await this.metadata(key, record, row.generation),
+        metadata: await encryptRecord(key, record, row.generation),
       });
     });
   }
@@ -533,17 +390,17 @@ export class Archive {
     return this.run(async () => {
       if (!validCount(now)) throw new Error('Invalid cleanup time.');
       const db = await this.db();
-      await this.expire(db, await this.key(db), now);
+      await this.expire(db, await archiveKey(db), now);
     });
   }
 
   cancelPending(site?: string): Promise<void> {
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       for (const row of await db.getAll('records')) {
         if (row.status !== 'saving') continue;
-        const record = await this.readRecord(key, row);
+        const record = await readRecord(key, row);
         if (site === undefined || record.site === site)
           await this.markFailed(
             db,
@@ -558,7 +415,7 @@ export class Archive {
   recover(): Promise<void> {
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       await this.expire(db, key, Date.now());
       for (const row of await db.getAll('records')) {
         if (row.status === 'saving')
@@ -580,7 +437,7 @@ export class Archive {
   usage(): Promise<ArchiveUsage> {
     return this.run(async () => {
       const db = await this.db();
-      const key = await this.key(db);
+      const key = await archiveKey(db);
       await this.expire(db, key, Date.now());
       return this.summarize(await db.getAll('records'));
     });

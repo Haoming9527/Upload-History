@@ -12,6 +12,17 @@ Upload History is a Manifest V3 extension built with WXT, TypeScript, and React.
 | `src/shared/`                                       | Define messages, validated settings, recording policy, limits, and URL sanitization.                                                                 |
 | `src/ui/` and UI entrypoints                        | Present consent, popup, history, detail, settings, deletion, and downloaded copies.                                                                  |
 
+### Module layout
+
+- `entrypoints/background.ts` starts `src/background/runtime.ts`, which owns message handling and worker lifecycle. `src/background/registration.ts` manages website permissions and content-script registration.
+- `src/storage/archive.ts` owns archive operations and serialization. `crypto.ts` owns key handling, authenticated encryption, and metadata integrity; `schema.ts` describes the persisted IndexedDB records. These internal modules preserve the archive's public interface and existing storage format.
+- `src/ui/App.tsx` composes the application shell. `features/` groups history, settings, popup, and onboarding views. `components/` contains shared controls, `data/` contains archive access, and `lib/` contains formatting and UI types.
+- `src/ui/styles/index.css` imports styles by responsibility in a fixed order, preserving the cascade. Responsive rules remain last.
+- `scripts/e2e/harness.mjs` owns the browser, fixture server, temporary profile, and capture helpers. `scripts/e2e/run.mjs` contains the behavioral scenarios.
+- `scripts/checks/` contains repository checks, `scripts/assets/` contains asset generation, and `tests/unit/` contains unit tests alongside the separate `tests/fixtures/` browser fixtures.
+
+`npm run check:structure` enforces a 500-line maximum for authored code, including CSS and tests. Generated files and lockfiles are outside that limit.
+
 ## Capture lifecycle
 
 1. Before consent and permission, no capture content script is registered. Onboarding explains local handling before requesting optional HTTP/HTTPS host access.

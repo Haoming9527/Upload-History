@@ -22,7 +22,7 @@
 
 ## Find the file you sent hours, days, or weeks ago
 
-Which version of your résumé did you attach? Where did you upload that assignment? What happened to the document you moved out of your Downloads folder?
+Which version of your resume did you attach? Where did you upload that assignment? What is the document you uploaded for your application?
 
 Upload History gives your browser a searchable memory for file attachments. Once enabled, it records files you select or drop into supported website upload controls, along with the website, page title, and time. With **Save copies** enabled, you can download an independent copy later—even if the original has been moved or deleted.
 

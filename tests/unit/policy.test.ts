@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS } from '../src/shared/types';
+import { DEFAULT_SETTINGS } from '../../src/shared/types';
 import {
   captureMode,
   effectiveMode,
   sanitizeUrl,
   validateSettings,
   webOrigin,
-} from '../src/shared/policy';
+} from '../../src/shared/policy';
 
 describe('recording policy', () => {
   it('does not record before consent or during pause', () => {

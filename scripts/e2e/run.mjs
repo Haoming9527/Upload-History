@@ -1,138 +1,40 @@
-import { chromium } from 'playwright';
-import { createServer } from 'node:http';
-import { cp, mkdir, mkdtemp, readFile, writeFile, unlink } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { readFile, writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { createHarness } from './harness.mjs';
 
-const root = process.cwd();
-const artifacts = path.join(root, 'artifacts');
-await mkdir(artifacts, { recursive: true });
-const run = await mkdtemp(path.join(artifacts, 'browser-'));
-const extension = path.join(run, 'extension');
-await cp(path.join(root, '.output/chrome-mv3'), extension, { recursive: true });
-const manifest = JSON.parse(await readFile(path.join(extension, 'manifest.json'), 'utf8'));
-assert.equal(manifest.chrome_url_overrides, undefined, 'Must not replace browser history');
-assert.equal(manifest.host_permissions, undefined, 'Website access must be optional');
-assert.equal(manifest.content_scripts, undefined, 'No injection before consent');
-assert.deepEqual(manifest.permissions, ['storage', 'scripting', 'alarms']);
-assert.equal(manifest.incognito, 'not_allowed');
-// Chromium cannot automate its native optional-host permission prompt. Pregrant
-// access in this test copy only; every bundled script is the production build.
-manifest.host_permissions = ['http://*/*', 'https://*/*'];
-await writeFile(path.join(extension, 'manifest.json'), JSON.stringify(manifest));
-
-const fixture = await readFile('tests/fixtures/upload.html');
-const fixtureJS = await readFile('tests/fixtures/fixture.js');
-const server = createServer((req, res) => {
-  res.setHeader('Content-Type', req.url === '/fixture.js' ? 'text/javascript' : 'text/html');
-  // Let document_start discovery finish before the page creates its roots.
-  // This reproduces a slow external script on CI instead of relying on timing.
-  if (req.url === '/fixture.js') setTimeout(() => res.end(fixtureJS), 200);
-  else if (req.url === '/frame')
-    res.end(
-      '<!doctype html><title>Embedded assignment</title><label>Embedded file <input id="embedded" type="file"></label>',
-    );
-  else res.end(fixture);
-});
-await new Promise((resolve) => server.listen(0, '0.0.0.0', resolve));
-const port = server.address().port;
-const origin = `http://127.0.0.1:${port}`;
-const altOrigin = `http://localhost:${port}`;
-const profile = path.join(run, 'profile');
-const errors = [];
-const checks = [];
-let context;
-let ui;
-let extensionId;
-const screenshotDir = path.join(artifacts, 'screenshots');
-await mkdir(screenshotDir, { recursive: true });
-
-async function launch() {
-  context = await chromium.launchPersistentContext(profile, {
-    channel: 'chromium',
-    headless: true,
-    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
-    args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`],
-    ignoreDefaultArgs: ['--disable-extensions'],
-    viewport: { width: 1440, height: 1000 },
-    acceptDownloads: true,
-  });
-  context.on('page', (page) => page.on('pageerror', (e) => errors.push(e.message)));
-  const worker =
-    context.serviceWorkers()[0] ??
-    (await context.waitForEvent('serviceworker', { timeout: 20000 }));
-  extensionId = new URL(worker.url()).host;
-  ui = await context.newPage();
-  await ui.goto(`chrome-extension://${extensionId}/history.html`);
-  await ui.waitForFunction(() => !!document.querySelector('button'));
-  return worker;
-}
-async function request(message) {
-  const response = await ui.evaluate((message) => chrome.runtime.sendMessage(message), message);
-  assert.equal(response.ok, true, `${message.type}: ${response.error}`);
-  return response.data;
-}
-async function state() {
-  return request({ type: 'ui:state' });
-}
-async function attach(locator, input) {
-  const directory = await mkdtemp(path.join(run, 'selection-'));
-  const files = Array.isArray(input) ? input : [input];
-  const paths = [];
-  for (const file of files) {
-    const filePath = path.join(directory, file.name);
-    await writeFile(filePath, file.buffer);
-    paths.push(filePath);
-  }
-  // Disk paths use Chromium's native file picker protocol and trusted events.
-  // Playwright's buffer convenience helper synthesizes untrusted change events.
-  await locator.setInputFiles(paths);
-}
-async function waitRecord(name, status = 'saved') {
-  const until = Date.now() + 30000;
-  while (Date.now() < until) {
-    const records = (await state()).records;
-    const record = records.find((r) => r.name === name && r.status === status);
-    if (record) return record;
-    await new Promise((resolve) => setTimeout(resolve, 150));
-  }
-  throw new Error(
-    `Record ${name} did not reach ${status}: ${JSON.stringify((await state()).records.map((r) => ({ name: r.name, status: r.status, failure: r.failure })))}`,
-  );
-}
-function check(label) {
-  checks.push(label);
-  console.log(`PASS ${label}`);
-}
-async function downloadBytes(id) {
-  const ticket = await request({ type: 'ui:download', id });
-  const parts = [];
-  for (let i = 0; i < ticket.chunks; i++)
-    parts.push(
-      Buffer.from(
-        (await request({ type: 'ui:download-chunk', ticket: ticket.ticket, index: i })).data,
-        'base64',
-      ),
-    );
-  await request({ type: 'ui:download-end', ticket: ticket.ticket });
-  return Buffer.concat(parts);
-}
+const harness = await createHarness();
+const {
+  run,
+  artifacts,
+  origin,
+  altOrigin,
+  screenshotDir,
+  errors,
+  checks,
+  launch,
+  request,
+  state,
+  attach,
+  waitRecord,
+  check,
+  downloadBytes,
+} = harness;
 
 try {
   let worker = await launch();
-  const upload = await context.newPage();
+  const upload = await harness.context.newPage();
   await upload.goto(`${origin}/assignment?token=should-not-be-stored#private`);
   await attach(upload.locator('#single'), {
     name: 'before-consent.txt',
     buffer: Buffer.from('before'),
   });
   assert.equal((await state()).records.length, 0);
-  await ui.screenshot({ path: path.join(screenshotDir, 'onboarding.png'), fullPage: true });
+  await harness.ui.screenshot({ path: path.join(screenshotDir, 'onboarding.png'), fullPage: true });
   check('No recording before consent');
-  await ui.getByRole('button', { name: 'Enable Upload History', exact: true }).click();
-  await ui.getByRole('heading', { name: /Your upload history/ }).waitFor();
+  await harness.ui.getByRole('button', { name: 'Enable Upload History', exact: true }).click();
+  await harness.ui.getByRole('heading', { name: /Your upload history/ }).waitFor();
   await upload.reload();
 
   const original = Buffer.from(
@@ -169,8 +71,8 @@ try {
 
   // Wake the MV3 worker from a file event in an existing page. Reinjecting the
   // content script during startup would dispose the pipeline holding this file.
-  await ui.goto(`chrome-extension://${extensionId}/privacy.html`); // No UI polling to wake it.
-  const lifecycle = await context.newCDPSession(ui);
+  await harness.ui.goto(`chrome-extension://${harness.extensionId}/privacy.html`); // No UI polling to wake it.
+  const lifecycle = await harness.context.newCDPSession(harness.ui);
   const versions = new Map();
   lifecycle.on('ServiceWorker.workerVersionUpdated', ({ versions: updated }) => {
     for (const version of updated) versions.set(version.versionId, version);
@@ -181,7 +83,7 @@ try {
   while (!activeVersion && Date.now() < workerDeadline) {
     activeVersion = [...versions.values()].find(
       (v) =>
-        v.scriptURL === `chrome-extension://${extensionId}/background.js` &&
+        v.scriptURL === `chrome-extension://${harness.extensionId}/background.js` &&
         v.runningStatus === 'running',
     );
     if (!activeVersion) await new Promise((resolve) => setTimeout(resolve, 50));
@@ -199,7 +101,7 @@ try {
     name: 'after-worker-sleep.txt',
     buffer: Buffer.from('wake once'),
   });
-  await ui.goto(`chrome-extension://${extensionId}/history.html`);
+  await harness.ui.goto(`chrome-extension://${harness.extensionId}/history.html`);
   const afterSleep = await waitRecord('after-worker-sleep.txt');
   assert.deepEqual(await downloadBytes(afterSleep.id), Buffer.from('wake once'));
   await lifecycle.detach();
@@ -230,7 +132,7 @@ try {
 
   const closedPath = path.join(run, 'closed.txt');
   await writeFile(closedPath, 'closed shadow');
-  const cdp = await context.newCDPSession(upload);
+  const cdp = await harness.context.newCDPSession(upload);
   const dom = await cdp.send('DOM.getDocument', { depth: -1, pierce: true });
   function findClosed(node) {
     if (node.attributes?.includes('closed-file')) return node;
@@ -354,58 +256,61 @@ try {
 
   await request({ type: 'ui:keep', id: saved.id, kept: true });
   assert.equal((await state()).records.find((r) => r.id === saved.id).expiresAt, null);
-  await ui.reload();
-  await ui.getByRole('button', { name: 'Download assignment.txt' }).first().waitFor();
-  await ui.screenshot({ path: path.join(screenshotDir, 'history.png'), fullPage: true });
-  await ui.setViewportSize({ width: 390, height: 844 });
-  await ui.screenshot({ path: path.join(screenshotDir, 'history-mobile.png'), fullPage: true });
+  await harness.ui.reload();
+  await harness.ui.getByRole('button', { name: 'Download assignment.txt' }).first().waitFor();
+  await harness.ui.screenshot({ path: path.join(screenshotDir, 'history.png'), fullPage: true });
+  await harness.ui.setViewportSize({ width: 390, height: 844 });
+  await harness.ui.screenshot({
+    path: path.join(screenshotDir, 'history-mobile.png'),
+    fullPage: true,
+  });
   assert.equal(
-    await ui.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    await harness.ui.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
     false,
   );
-  await ui.setViewportSize({ width: 1440, height: 1000 });
-  const downloadPromise = ui.waitForEvent('download');
-  await ui.getByRole('button', { name: 'Download assignment.txt' }).first().click();
+  await harness.ui.setViewportSize({ width: 1440, height: 1000 });
+  const downloadPromise = harness.ui.waitForEvent('download');
+  await harness.ui.getByRole('button', { name: 'Download assignment.txt' }).first().click();
   const downloaded = await downloadPromise;
   const downloadedBytes = await readFile(await downloaded.path());
   assert.ok(downloadedBytes.equals(Buffer.from('replacement')) || downloadedBytes.equals(original));
   check('Real UI download, Keep control state and narrow-screen layout');
 
-  await ui.goto(`chrome-extension://${extensionId}/options.html`);
-  await ui.getByRole('button', { name: 'Save settings', exact: true }).waitFor();
+  await harness.ui.goto(`chrome-extension://${harness.extensionId}/options.html`);
+  await harness.ui.getByRole('button', { name: 'Save settings', exact: true }).waitFor();
   const initialSettings = (await state()).settings;
-  await ui.locator('#retention').selectOption('7');
-  await ui.locator('#file-limit').fill('12');
-  await ui.locator('#budget').fill('600');
-  await ui.locator('#default-mode').selectOption('logs');
-  await ui.getByText('Recording preference saved.', { exact: true }).waitFor();
+  await harness.ui.locator('#retention').selectOption('7');
+  await harness.ui.locator('#file-limit').fill('12');
+  await harness.ui.locator('#budget').fill('600');
+  await harness.ui.locator('#default-mode').selectOption('logs');
+  await harness.ui.getByText('Recording preference saved.', { exact: true }).waitFor();
   assert.equal((await state()).settings.defaultMode, 'logs');
   assert.equal((await state()).settings.maxFileMiB, initialSettings.maxFileMiB);
-  assert.equal(await ui.locator('#file-limit').inputValue(), '12');
-  await ui.locator('#paused').click();
-  await ui.waitForFunction(
+  assert.equal(await harness.ui.locator('#file-limit').inputValue(), '12');
+  await harness.ui.locator('#paused').click();
+  await harness.ui.waitForFunction(
     () => document.querySelector('#paused').checked && !document.querySelector('#paused').disabled,
   );
   assert.equal((await state()).settings.paused, true);
-  assert.equal(await ui.locator('#retention').inputValue(), '7');
-  await ui.getByRole('button', { name: 'Save settings', exact: true }).click();
-  await ui.getByText('Settings saved.', { exact: true }).waitFor();
+  assert.equal(await harness.ui.locator('#retention').inputValue(), '7');
+  await harness.ui.getByRole('button', { name: 'Save settings', exact: true }).click();
+  await harness.ui.getByText('Settings saved.', { exact: true }).waitFor();
   const updatedSettings = (await state()).settings;
   assert.equal(updatedSettings.retentionDays, 7);
   assert.equal(updatedSettings.maxFileMiB, 12);
   assert.equal(updatedSettings.budgetMiB, 600);
   assert.equal(updatedSettings.defaultMode, 'logs');
   assert.equal(updatedSettings.paused, true);
-  await ui.reload();
-  assert.equal(await ui.locator('#default-mode').inputValue(), 'logs');
-  assert.equal(await ui.locator('#paused').isChecked(), true);
+  await harness.ui.reload();
+  assert.equal(await harness.ui.locator('#default-mode').inputValue(), 'logs');
+  assert.equal(await harness.ui.locator('#paused').isChecked(), true);
   await request({ type: 'ui:settings', patch: initialSettings });
-  await ui.reload();
+  await harness.ui.reload();
   check('Recording preferences autosave while storage drafts wait for Save settings');
-  await ui.screenshot({ path: path.join(screenshotDir, 'settings.png'), fullPage: true });
-  const popup = await context.newPage();
+  await harness.ui.screenshot({ path: path.join(screenshotDir, 'settings.png'), fullPage: true });
+  const popup = await harness.context.newPage();
   await popup.setViewportSize({ width: 400, height: 720 });
-  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await popup.goto(`chrome-extension://${harness.extensionId}/popup.html`);
   await upload.bringToFront();
   await popup.reload();
   await popup.locator('#current-site-mode').selectOption('logs');
@@ -424,8 +329,8 @@ try {
   check('Popup site mode persists immediately and affects the next file selection');
   await popup.waitForTimeout(500);
   await popup.screenshot({ path: path.join(screenshotDir, 'popup.png'), fullPage: true });
-  await ui.goto(`chrome-extension://${extensionId}/history.html`);
-  await context.close();
+  await harness.ui.goto(`chrome-extension://${harness.extensionId}/history.html`);
+  await harness.context.close();
   worker = await launch();
   assert.deepEqual(await downloadBytes(saved.id), original);
   check('Browser restart preserves the encryption key and independent saved bytes');
@@ -433,7 +338,7 @@ try {
   const current = (await state()).records;
   await request({ type: 'ui:delete', ids: [saved.id] });
   assert.equal((await state()).records.length, current.length - 1);
-  const rejected = await ui.evaluate(
+  const rejected = await harness.ui.evaluate(
     (id) => chrome.runtime.sendMessage({ type: 'ui:download', id }),
     saved.id,
   );
@@ -518,6 +423,5 @@ try {
   );
   console.log(`Verified ${checks.length} browser scenarios. Screenshots: ${screenshotDir}`);
 } finally {
-  if (context) await context.close().catch(() => {});
-  await new Promise((resolve) => server.close(resolve));
+  await harness.close();
 }

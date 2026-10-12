@@ -10,7 +10,7 @@ import {
   type DownloadTicket,
   type Reply,
   type Settings,
-} from '../src/shared/types';
+} from '../../src/shared/types';
 
 vi.mock('wxt/utils/define-background', () => ({
   defineBackground: (start: () => void) => start(),
@@ -137,7 +137,7 @@ async function harness(
     },
   };
   vi.stubGlobal('chrome', chromeMock);
-  await import('../entrypoints/background');
+  await import('../../entrypoints/background');
   function send<T = unknown>(message: unknown, sender = contentSender): Promise<Reply<T>> {
     return new Promise((resolve) =>
       onMessage.fire(message, sender, (reply) => resolve(reply as Reply<T>)),
