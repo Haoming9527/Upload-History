@@ -1,86 +1,112 @@
+<a id="top"></a>
+
 <p align="center">
   <img src="public/icon/128.png" alt="Upload History" width="80" height="80" />
 </p>
 
 <h1 align="center">Upload History</h1>
 
-<p align="center"><strong>Remember what you attached. Find it when you need it.</strong></p>
-
 <p align="center">
-  An open-source Chrome extension that keeps your file attachment history<br />
-  and recoverable copies in one place—right in your browser.
+  <strong>Your browser remembers your downloads. Now remember your uploads.</strong>
 </p>
 
 <p align="center">
-  <a href="#get-started">Get started</a> ·
+  Remember what you attached, where you attached it, and when.<br />
+  Find the exact saved file later—even if the original has been moved or deleted.
+</p>
+
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/Upload%20History/cdkjpgfbcpfnicgbipnomlnjcaagflef"><img src="https://img.shields.io/badge/Add_to_Chrome-2859E5?style=for-the-badge&amp;logo=googlechrome&amp;logoColor=white" alt="Add to Chrome" /></a>
+  <a href="https://haoming9527.github.io/Upload-History/"><img src="https://img.shields.io/badge/Try_the_Demo-172B4D?style=for-the-badge&amp;logo=githubpages&amp;logoColor=white" alt="Try the interactive demo" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Haoming9527/Upload-History/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Haoming9527/Upload-History/ci.yml?branch=main&amp;style=flat-square&amp;label=build&amp;logo=githubactions&amp;logoColor=white" alt="Build and verification status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2859E5?style=flat-square" alt="License: MIT" /></a>
+  <a href="#get-started"><img src="https://img.shields.io/badge/Chrome-148%2B-2859E5?style=flat-square&amp;logo=googlechrome&amp;logoColor=white" alt="Requires Chrome 148 or newer" /></a>
+  <a href="https://github.com/Haoming9527/Upload-History/stargazers"><img src="https://img.shields.io/github/stars/Haoming9527/Upload-History?style=flat-square&amp;label=stars&amp;color=E7B84B&amp;logo=github&amp;logoColor=white" alt="GitHub stars" /></a>
+</p>
+
+<p align="center">
+  <a href="https://haoming9527.github.io/Upload-History/">Website & demo</a> ·
   <a href="#features">Features</a> ·
   <a href="docs/PRIVACY.md">Privacy</a> ·
-  <a href="CONTRIBUTING.md">Contribute</a>
+  <a href="#development">Development</a> ·
+  <a href="https://github.com/Haoming9527/Upload-History/issues">Report a bug</a>
 </p>
 
 ---
 
-## Find the file you sent hours, days, or weeks ago
+<details>
+<summary><strong>Explore the project</strong></summary>
 
-Which version of your resume did you attach? Where did you upload that assignment? What is the document you uploaded for your application?
+- [Get started](#get-started)
+- [Features](#features)
+- [How it works](#how-it-works)
+- [Website compatibility](#website-compatibility)
+- [Archive settings](#your-archive-your-controls)
+- [Privacy](#privacy)
+- [Frequently asked questions](#frequently-asked-questions)
+- [Development](#development)
+- [Contribute & support](#contribute--support)
+- [License](#license)
 
-Upload History gives your browser a searchable memory for file attachments. Once enabled, it records files you select or drop into supported website upload controls, along with the website, page title, and time. With **Save copies** enabled, you can download an independent copy later—even if the original has been moved or deleted.
+</details>
 
-Built for everyday tasks: school assignments, job applications, online forms, and document uploads. Google Forms is one example of the workflows it aims to support; the capture engine works across common browser upload controls rather than relying on a single platform.
+## Which version did you send?
 
-**No account. No cloud sync. No files sent to us.**
+The resume you attached last week. The assignment you uploaded before the deadline. The application document you edited afterward.
 
-## Features
+**Upload History gives those attachments a searchable home.** Once you enable recording, it remembers files selected or dropped into supported website upload controls, along with the website, page title, and time. With **Save copies** enabled, you can recover an independent copy of the file you attached.
 
-| Feature                          | What it does for you                                                                                          |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Automatic attachment history** | Remember file selections and drops after you enable recording and grant website access.                       |
-| **Recoverable local copies**     | Retrieve the exact saved file, independently of its original location.                                        |
-| **Search and filters**           | Find attachments by filename, website, page title, date, or recording status.                                 |
-| **Website preferences**          | Save copies, keep details only, or turn recording off for individual websites.                                |
-| **Instant recording controls**   | Pause recording or change recording modes without pressing Save settings.                                     |
-| **Flexible retention**           | Automatically remove older records, or mark important records as Keep to exclude them from automatic cleanup. |
-| **Clear copy status**            | See which copies are saved, still saving, or unavailable, with a reason when saving fails.                    |
-| **Local encryption**             | File copies and archive metadata are encrypted with AES-GCM in your Chrome profile.                           |
-
-## How it works
-
-1. **Enable recording.** Choose Save copies or Logs only, then approve Chrome's website-access request.
-2. **Attach files as usual.** Use supported file pickers or drag-and-drop controls on websites.
-3. **Find them later.** Open Upload History to search your records, inspect file details, and download saved copies.
-
-**Save copies** stores file details and an independent copy within your configured limits. **Logs only** stores file details without reading or saving the file contents. **Off** disables recording for that website.
+Free and open source. **No account, no analytics, no cloud sync, and no files sent to us.**
 
 ## Get started
 
-Upload History is currently available as a **local development build**. A Chrome Web Store release is planned; it is not published yet.
+### [Add Upload History to Chrome →](https://chromewebstore.google.com/detail/Upload%20History/cdkjpgfbcpfnicgbipnomlnjcaagflef)
 
-### Install locally
+Requires **desktop Chrome 148 or newer**.
 
-You need **desktop Chrome 148 or newer** and **Node.js 24** (recommended).
+1. Install the extension and pin it to your toolbar.
+2. Open Upload History, choose **Save copies** or **Logs only**, and grant website access.
+3. Attach a file as usual, then open the extension to find its record and recover its saved copy.
 
-```sh
-git clone https://github.com/Haoming9527/Upload-History.git
-cd Upload-History
-npm ci
-npm run build
-```
+Recording starts only after you enable it and grant access. You can pause it or change recording preferences for individual websites at any time.
 
-1. Open `chrome://extensions` and turn on **Developer mode**.
-2. Click **Load unpacked** and select `.output/chrome-mv3` inside the project folder.
-3. Open Upload History from Chrome's extensions menu and complete onboarding.
-4. Pin the extension for quick access to recent attachments and recording controls.
-5. Try a disposable file on a supported upload page, then open your history and download the saved copy.
+> [!TIP]
+> Try it with a sample file first. Attach it on a supported website, wait for **Copy saved**, then download it from Upload History to see recovery in action.
 
-After rebuilding, click **Reload** on the extension's card and refresh your website tabs.
+## Features
+
+| Feature                      | What you can do                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| **Remember attachments**     | See the filename, website, page title, and time in one history.                            |
+| **Recover exact copies**     | Download a saved attachment even after moving or deleting the original.                    |
+| **Find files quickly**       | Search by filename, website, or page title; filter by website, date, or status.            |
+| **Track different versions** | Keep separate records and saved copies for attachments with the same filename.             |
+| **Choose what gets saved**   | Save copies, log file details only, or disable recording for individual websites.          |
+| **Keep what matters**        | Mark important records as **Keep**, adjust retention, or delete records whenever you want. |
+| **Know what's available**    | See whether a copy is saved, still saving, or unavailable—and why.                         |
+
+## How it works
+
+**Attach → Remember → Recover**
+
+Use website upload controls as usual. Upload History records supported file selections and drops in the background. Open the popup for recent attachments, or search the full archive when you need an older file.
+
+| Recording mode  | What's stored                                                             |
+| --------------- | ------------------------------------------------------------------------- |
+| **Save copies** | File details and an independent file copy, within your configured limits. |
+| **Logs only**   | File details, without reading or saving file contents.                    |
+| **Off**         | No new records for that website.                                          |
 
 ### Website compatibility
 
-The capture engine supports standard file inputs, dynamic upload controls, file drops, and accessible embedded uploaders, including tested shadow-DOM fixtures. It accepts any file type exposed through a supported control, subject to size and storage limits.
+Upload History works with standard file pickers, dynamic upload controls, file drops, and accessible embedded uploaders. It accepts any file type exposed through a supported control, subject to size and storage limits.
 
-Compatibility depends on how each website handles files. Cloud-document pickers, proprietary controls, and browser-restricted pages may not expose a file the extension can capture. Incognito and mobile browsers are outside the current scope. Named platforms and school portals need individual workflow testing.
+Compatibility depends on the website. Cloud-document pickers, some custom uploaders, and browser-restricted pages may not expose files the extension can capture. Incognito and mobile browsers are not supported.
 
-See the [compatibility guide](docs/COMPATIBILITY.md) for coverage and the [testing guide](docs/TESTING.md) for a Google Forms walkthrough.
+See the [compatibility guide](docs/COMPATIBILITY.md) for coverage and the [testing guide](docs/TESTING.md) to try a Google Forms workflow.
 
 ## Your archive, your controls
 
@@ -90,47 +116,127 @@ See the [compatibility guide](docs/COMPATIBILITY.md) for coverage and the [testi
 | Local archive budget | 500 MiB | 50–2,000 MiB                   |
 | New-record retention | 90 days | 1–3,650 days, or until deleted |
 
-Recording preferences save immediately. Retention, maximum file size, and storage budget apply when you click **Save settings**. Retention changes apply to new records.
+Recording preferences save immediately. Retention, maximum file size, and storage budget apply when you click **Save settings**. Retention changes apply to new records; records marked **Keep** stay until you delete them.
 
-Existing copies are never evicted to make space. When a new copy cannot fit, the extension keeps a failure record if space for its details remains. If the archive cannot accept another record, it displays a capture warning.
+Existing copies are not automatically deleted to make room. Files that cannot be saved receive a history record with an explanation when browser storage and record limits allow. Recovery is available for successfully saved copies still retained in your archive.
 
-## Privacy by design
+## Privacy
 
-- Recording starts only after your consent and website permission.
-- Files and history stay in the current Chrome profile; there is no backend, analytics, or developer-operated upload service.
-- You can pause recording, exclude websites, delete records, or clear the archive.
-- URL credentials, query strings, and fragments are removed before storage.
+Your files and history stay in your current Chrome profile. Upload History has no backend, analytics, or developer-operated upload service.
 
-The encryption key is stored in the same browser profile, without a separate password. Someone with access to that profile may access the archive. Preferences and storage-management fields are not all encrypted. Keep separate backups of important files: uninstalling the extension or deleting its profile can remove the archive.
+- **You choose when to record.** Enable recording after consent, pause it, or exclude websites.
+- **You control deletion.** Remove individual records or clear your archive.
+- **Copies are encrypted locally.** File contents and archive metadata use AES-GCM encryption.
+- **URLs are trimmed.** Credentials, query strings, and fragments are removed before storage.
 
-Read the [privacy policy](docs/PRIVACY.md) and [security model](SECURITY.md).
+The encryption key lives in the same browser profile, without a separate password. Someone with access to that profile may access the archive. Preferences and some storage-management fields are not encrypted. Uninstalling the extension or deleting its browser data can remove saved copies, so keep separate backups of important files.
+
+[Privacy policy](docs/PRIVACY.md) · [Security model and reporting](SECURITY.md)
+
+## Frequently asked questions
+
+<details>
+<summary><strong>Can I recover a file after deleting the original?</strong></summary>
+
+Yes, if Upload History successfully saved a copy and that copy is still in your archive. Moving, renaming, editing, or deleting the original does not change an already saved copy.
+
+</details>
+
+<details>
+<summary><strong>Can it find attachments from before I installed it?</strong></summary>
+
+No. Recording begins after you enable it and grant website access. Upload History cannot reconstruct earlier attachments.
+
+</details>
+
+<details>
+<summary><strong>Does my history sync between computers?</strong></summary>
+
+No. Your archive stays in the Chrome profile where it was recorded. There is no account or cloud sync.
+
+</details>
+
+<details>
+<summary><strong>Why is there a record without a saved copy?</strong></summary>
+
+The website may be set to **Logs only**, the file may exceed your size limit, or storage may be unavailable. Open the record to see its status and explanation. A details-only record cannot be used to recover file contents.
+
+</details>
+
+<details>
+<summary><strong>How do I report an uploader that doesn't work?</strong></summary>
+
+Use the [upload compatibility report](https://github.com/Haoming9527/Upload-History/issues/new?template=compatibility.yml). Include your Chrome and extension versions, the website, and whether you used a file picker or drag and drop. Use harmless sample files and remove private details.
+
+</details>
 
 ## Development
 
+<p>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="TypeScript" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-172B4D?style=flat-square&amp;logo=react&amp;logoColor=61DAFB" alt="React" /></a>
+  <a href="https://wxt.dev/"><img src="https://img.shields.io/badge/WXT-257D62?style=flat-square" alt="WXT" /></a>
+  <a href="https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3"><img src="https://img.shields.io/badge/Manifest-V3-2859E5?style=flat-square&amp;logo=googlechrome&amp;logoColor=white" alt="Manifest V3" /></a>
+</p>
+
 Built with **TypeScript, React, WXT, and Manifest V3**, using IndexedDB and Web Crypto for local storage.
+
+### Install locally
+
+Use **Node.js 24** (recommended) and **desktop Chrome 148 or newer**.
+
+```sh
+git clone https://github.com/Haoming9527/Upload-History.git
+cd Upload-History
+npm ci
+npm run build
+```
+
+1. Open `chrome://extensions` and enable **Developer mode**.
+2. Click **Load unpacked** and select `.output/chrome-mv3` inside the project.
+3. Open the extension and complete onboarding.
+
+After rebuilding, click **Reload** on the extension's card and refresh your website tabs.
+
+### Useful commands
 
 ```sh
 npm run dev          # Start development mode
-npm run check        # Type checking, unit tests, and production build
+npm run check        # Structure, types, unit tests, and extension/site builds
 npx playwright install chromium
 npm run test:e2e     # Run browser scenarios
 npm run zip          # Package the extension for distribution
 ```
 
-Automated checks cover capture, recording policies, encrypted storage, byte-for-byte recovery, browser restarts, and settings persistence. The browser harness pregrants website access in a separate test manifest; native permission prompts and real-platform compatibility still require manual checks.
+Automated checks cover capture, recording policies, encrypted storage, byte-for-byte recovery, browser restarts, and settings persistence. The browser harness pregrants website access in a separate test manifest; native permission prompts and real-platform compatibility also need manual verification.
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Testing and verification](docs/TESTING.md)
-- [Chrome Web Store release guide](docs/RELEASE.md)
+[Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Release guide](docs/RELEASE.md) · [Website development](site/README.md)
 
-## Help improve Upload History
+## Contribute & support
 
-Found an upload flow that does not work? Have an idea that would make finding old attachments easier? [Open an issue](https://github.com/Haoming9527/Upload-History/issues) or read the [contribution guide](CONTRIBUTING.md).
+You don't have to write code to help. Test an upload flow, improve the docs, suggest a feature, or contribute a fix.
 
-Use sample files and sanitized details in bug reports. Report sensitive vulnerabilities through the process in [SECURITY.md](SECURITY.md).
+| Want to help?                       | Start here                                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Something isn't working             | [Report a bug](https://github.com/Haoming9527/Upload-History/issues/new?template=bug.yml)                           |
+| A website's uploader isn't recorded | [Report a compatibility issue](https://github.com/Haoming9527/Upload-History/issues/new?template=compatibility.yml) |
+| Have an improvement in mind         | [Browse issues and suggest an idea](https://github.com/Haoming9527/Upload-History/issues)                           |
+| Ready to contribute code or docs    | [Read the contribution guide](CONTRIBUTING.md)                                                                      |
+| Want to meet the contributors       | [View contributors](https://github.com/Haoming9527/Upload-History/graphs/contributors)                              |
 
-If Upload History is useful to you, **star the repository** to help others discover it.
+Use sample files and sanitized details in public reports. For sensitive vulnerabilities, follow [SECURITY.md](SECURITY.md).
+
+**Find it useful? Give Upload History a ⭐ on GitHub, share it with someone who could use it, or leave an honest review on the [Chrome Web Store](https://chromewebstore.google.com/detail/Upload%20History/cdkjpgfbcpfnicgbipnomlnjcaagflef).**
 
 ## License
 
 [MIT](LICENSE) — free to use, inspect, and contribute to.
+
+---
+
+<p align="center">
+  <strong>A little memory for your uploads.</strong><br />
+  <a href="https://chromewebstore.google.com/detail/Upload%20History/cdkjpgfbcpfnicgbipnomlnjcaagflef">Install Upload History</a> ·
+  <a href="https://github.com/Haoming9527/Upload-History">Star on GitHub ⭐</a> ·
+  <a href="#top">Back to top ↑</a>
+</p>

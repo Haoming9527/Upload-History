@@ -137,7 +137,7 @@ describe('encrypted archive', () => {
     expect((await archive.usage()).usedBytes).toBe(limits.budgetBytes);
   });
 
-  it('preserves failure details for oversized files and rejects metadata when completely full', async () => {
+  it('keeps history even when the budget is exhausted or lowered below usage', async () => {
     const { archive } = setup();
     const result = await archive.begin(record(101), {
       maxFileBytes: 100,
@@ -146,10 +146,34 @@ describe('encrypted archive', () => {
     expect(result.record.status).toBe('failed');
     expect(result.record.failure).toContain('maximum');
     expect(result.token).toBeUndefined();
-    await expect(
-      archive.begin(record(0), { maxFileBytes: 100, budgetBytes: RECORD_ALLOWANCE }),
-    ).rejects.toThrow('No space');
-    expect((await archive.list()).length).toBe(1);
+    const full = await archive.begin(record(1), {
+      maxFileBytes: 100,
+      budgetBytes: RECORD_ALLOWANCE,
+    });
+    expect(full.record.status).toBe('failed');
+    expect(full.record.failure).toContain('budget');
+    const logs = await archive.begin(record(10, { mode: 'logs' }), {
+      maxFileBytes: 100,
+      budgetBytes: 0,
+    });
+    expect(logs.record.status).toBe('logs');
+    expect(logs.token).toBeUndefined();
+    expect((await archive.list()).length).toBe(3);
+  });
+
+  it('finishes a reserved copy after lower limits reject new copies', async () => {
+    const { archive } = setup();
+    const existing = await save(archive, new Uint8Array([9]));
+    const pending = await archive.begin(record(3), LIMITS);
+    const lower = { maxFileBytes: 1, budgetBytes: 0 };
+    const next = await archive.begin(record(1), lower);
+    expect(next.record.status).toBe('failed');
+    expect(next.token).toBeUndefined();
+    await archive.append(pending.record.id, pending.token!, 0, new Uint8Array([1, 2, 3]));
+    await archive.finish(pending.record.id, pending.token!);
+    expect((await archive.download(pending.record.id)).bytes).toEqual(new Uint8Array([1, 2, 3]));
+    expect((await archive.download(existing.id)).bytes).toEqual(new Uint8Array([9]));
+    expect((await archive.usage()).reservedBytes).toBe(0);
   });
 
   it('rejects late writes after deletion, including when the caller reuses an id', async () => {

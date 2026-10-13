@@ -43,9 +43,11 @@ UI messages are restricted to the popup, history, and options pages. Downloads u
 
 ## Budget and retention
 
-The default budget is 500 MiB; every record consumes a conservative 16 KiB allowance, and chunks include an additional accounting allowance. Pending transfers reserve their full expected cost so concurrent copies cannot overcommit the configured budget. This is not an exact on-disk measurement. Chrome quota or device errors can still prevent storage below the configured ceiling.
+The default budget is 500 MiB; every record consumes a conservative 16 KiB allowance, and chunks include an additional accounting allowance. Pending transfers reserve their full expected cost so concurrent copies are only admitted when the current budget has room. This is not an exact on-disk measurement. Chrome quota or device errors can still prevent storage below the configured ceiling.
 
-An oversized file or insufficient copy budget produces a failed-copy record if metadata fits. No space for metadata, or the 10,000-record ceiling, rejects a new record. Known dropped captures are reported through a dismissible capture warning, separately from an archive-opening failure. Existing files are preserved rather than evicted to create space.
+An oversized file or insufficient copy budget produces a failed-copy record. History metadata may exceed the configured budget; the 10,000-record ceiling and actual browser quota still bound it. Known dropped captures are reported through a dismissible capture warning, separately from an archive-opening failure. Existing files are preserved rather than evicted to create space.
+
+Size and budget limits are checked when the worker admits a new copy. Changing these limits leaves admitted transfers and their reservations intact, even if the new budget is below current usage. Pause, disabled recording, consent withdrawal, and permission revocation still cancel active copies. Retention changes apply to new records.
 
 On consent, the UI makes a best-effort request for persistent browser storage. Chrome may decline it; this is not a guarantee against eviction or profile loss and does not change the configured budget.
 

@@ -29,11 +29,11 @@ export function capturePolicyChanged(oldValue: unknown, newValue: unknown): bool
     return true;
   const previous = oldValue as Partial<Settings>;
   const next = newValue as Partial<Settings>;
+  // Size/budget edits apply at admission; they must not interrupt active copies.
   return (
     previous.consented !== next.consented ||
     previous.paused !== next.paused ||
     previous.defaultMode !== next.defaultMode ||
-    previous.maxFileMiB !== next.maxFileMiB ||
     JSON.stringify(previous.siteModes) !== JSON.stringify(next.siteModes)
   );
 }

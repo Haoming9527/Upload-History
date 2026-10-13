@@ -128,8 +128,8 @@ export class Archive {
         throw new Error('The archive record limit is reached. Delete records to save more.');
       const usage = this.summarize(rows);
       const remaining = limits.budgetBytes - usage.usedBytes - usage.reservedBytes;
-      if (remaining < RECORD_ALLOWANCE)
-        throw new Error('The archive is full. No space remains to save file details.');
+      // The budget gates new copies, never history metadata. Metadata remains
+      // bounded by MAX_RECORDS and Chrome's actual storage quota.
       record.status = record.mode === 'logs' ? 'logs' : 'saving';
       delete record.failure;
       delete record.sha256;

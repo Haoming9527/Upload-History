@@ -137,13 +137,9 @@ export class CapturePipeline {
       });
       // Logs and rejected copies have no token. Do not even call File.slice in these cases.
       if (!begun.token) return;
+      // The worker checked current limits at admission; selection-time limits may be stale.
       const ensureCurrent = () => {
-        if (
-          !this.current(item) ||
-          policy.mode !== 'copies' ||
-          begun?.record.mode !== 'copies' ||
-          item.file.size > policy.maxFileBytes
-        )
+        if (!this.current(item) || policy.mode !== 'copies' || begun?.record.mode !== 'copies')
           throw new Error('Copy unavailable');
       };
       ensureCurrent();

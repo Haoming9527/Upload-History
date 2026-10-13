@@ -58,6 +58,21 @@ function harness(
 }
 
 describe('capture privacy and streaming', () => {
+  it('honors worker admission when the size limit was raised after selection', async () => {
+    const background = harness();
+    const pipeline = new CapturePipeline({
+      send: async <T>(message: Message): Promise<T> => {
+        const reply = await background.send<T>(message);
+        if (message.type === 'capture:policy') return { ...reply, maxFileBytes: 1 } as T;
+        return reply;
+      },
+    });
+    pipeline.enqueue([item()]);
+    await vi.waitFor(() => expect(background.count('capture:finish')).toBe(1));
+    expect(background.count('capture:fail')).toBe(0);
+    pipeline.dispose();
+  });
+
   it('never calls a file byte-reading API in logs mode', async () => {
     const capture = item();
     const slice = vi.spyOn(capture.file, 'slice');
@@ -250,7 +265,14 @@ describe('capture metadata and setting invalidation', () => {
     expect(metadata.method).toBe('drop');
   });
 
-  it('ignores retention-only edits but cancels on recording or site changes', () => {
+  it('ignores limit and retention edits but cancels on recording or site changes', () => {
+    expect(
+      capturePolicyChanged(DEFAULT_SETTINGS, {
+        ...DEFAULT_SETTINGS,
+        maxFileMiB: 10,
+        budgetMiB: 50,
+      }),
+    ).toBe(false);
     expect(capturePolicyChanged(DEFAULT_SETTINGS, { ...DEFAULT_SETTINGS, retentionDays: 30 })).toBe(
       false,
     );

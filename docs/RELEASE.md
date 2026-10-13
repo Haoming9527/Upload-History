@@ -65,7 +65,7 @@ Google requires disclosures even for local handling. Its current FAQ also calls 
 
 > The extension has no account or backend. Open Upload History, read the onboarding disclosure, choose file copies or logs only, and enable website access. Use a harmless local file with a standard file input on an HTTP or HTTPS test website. The history should show the file selection and, after saving, offer a download with identical contents. No form submission is required.
 >
-> Pause recording or set the site to logs only, then choose another dummy file and inspect the different behavior. Review the record detail, Keep, and confirmed deletion. Files above the configured size or available budget show a failed copy when metadata space remains. The extension never labels selection as a confirmed website submission.
+> Pause recording or set the site to logs only, then choose another dummy file and inspect the different behavior. Review the record detail, Keep, and confirmed deletion. Files above the configured size or available budget keep a failed-copy record even above the configured budget, unless the browser quota or record cap is reached. The extension never labels selection as a confirmed website submission.
 >
 > The repository includes a synthetic upload fixture and an automated test harness. The harness pregrants hosts in its separate test copy; the submitted extension requests permission through Chrome after the user's onboarding action.
 

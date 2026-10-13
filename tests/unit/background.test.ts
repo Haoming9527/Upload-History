@@ -3,6 +3,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_SETTINGS,
+  CHUNK_BYTES,
   HOST_PATTERNS,
   type AppState,
   type BeginResult,
@@ -429,7 +430,7 @@ describe('background message security and capture lifecycle', () => {
     expect(await app.chromeMock.storage.session.get('captureWarning')).toEqual({});
   });
 
-  it('reports a failed trusted begin even when no record could be created', async () => {
+  it('keeps a failed-copy record when pending copies exhaust the budget', async () => {
     const app = await harness({ budgetMiB: 50 });
     const { epoch } = await app.policy();
     // Reserve almost the entire budget without allocating or reading a large file.
@@ -441,13 +442,52 @@ describe('background message security and capture lifecycle', () => {
     });
     expect(pending.data?.record.status).toBe('saving');
     const reply = await app.begin(epoch);
-    expect(reply.ok).toBe(false);
+    expect(reply.ok).toBe(true);
+    expect(reply.data?.record.status).toBe('failed');
+    expect(reply.data?.record.failure).toContain('budget');
     const state = await app.state();
-    expect(state.records.map((record) => record.id)).toEqual([pending.data!.record.id]);
-    expect(state.captureWarning).toMatch(/could not be recorded/);
-    expect((await app.chromeMock.storage.session.get('captureWarning')).captureWarning).toBe(
-      state.captureWarning,
+    expect(state.records).toHaveLength(2);
+    expect(state.records.find((record) => record.id === pending.data!.record.id)?.status).toBe(
+      'saving',
     );
+    expect(state.captureWarning).toBeUndefined();
+  });
+
+  it('applies new limits to new captures without cancelling an admitted copy', async () => {
+    const app = await harness();
+    const { epoch } = await app.policy();
+    const bytes = Buffer.alloc(1024 * 1024 + 1, 7);
+    const message = {
+      type: 'capture:begin',
+      captureId: 'limit-change',
+      epoch,
+      metadata: { ...metadata, size: bytes.length },
+    };
+    const { record, token } = (await app.send<BeginResult>(message)).data!;
+    expect(token).toBeTruthy();
+    expect(
+      (await app.send({ type: 'ui:settings', patch: { maxFileMiB: 1, budgetMiB: 50 } }, uiSender))
+        .ok,
+    ).toBe(true);
+    expect((await app.policy()).epoch).toBe(epoch);
+    for (let offset = 0, index = 0; offset < bytes.length; offset += CHUNK_BYTES, index++) {
+      expect(
+        (
+          await app.send({
+            type: 'capture:chunk',
+            id: record.id,
+            token,
+            index,
+            data: bytes.subarray(offset, offset + CHUNK_BYTES).toString('base64'),
+          })
+        ).ok,
+      ).toBe(true);
+    }
+    expect((await app.send({ type: 'capture:finish', id: record.id, token })).ok).toBe(true);
+    const next = await app.send<BeginResult>(message);
+    expect(next.data?.record.status).toBe('failed');
+    expect(next.data?.record.failure).toContain('maximum');
+    expect((await app.state()).records.find((row) => row.id === record.id)?.status).toBe('saved');
   });
 
   it('restores a session warning when the service worker starts', async () => {

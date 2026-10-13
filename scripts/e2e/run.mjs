@@ -244,15 +244,11 @@ try {
   check('The full 50 MiB file limit saves and recovers identical bytes');
   await request({ type: 'ui:settings', patch: { budgetMiB: 50 } });
   await attach(upload.locator('#single'), { name: 'no-space.txt', buffer: Buffer.from('no room') });
-  const warningDeadline = Date.now() + 10000;
-  while (!(await state()).captureWarning && Date.now() < warningDeadline)
-    await new Promise((r) => setTimeout(r, 100));
-  assert.ok((await state()).captureWarning);
+  const noSpace = await waitRecord('no-space.txt', 'failed');
+  assert.match(noSpace.failure, /budget/);
   assert.equal((await state()).records.find((r) => r.id === largest.id).status, 'saved');
-  await request({ type: 'ui:dismiss-warning' });
-  assert.equal((await state()).captureWarning, undefined);
   await request({ type: 'ui:settings', patch: { budgetMiB: 500 } });
-  check('A full archive warns visibly and preserves existing copies');
+  check('Lowering the budget below usage preserves existing copies and records new file details');
 
   await request({ type: 'ui:keep', id: saved.id, kept: true });
   assert.equal((await state()).records.find((r) => r.id === saved.id).expiresAt, null);

@@ -201,7 +201,7 @@ export function SettingsPage({
           <div className="setting-line">
             <div>
               <label htmlFor="file-limit">Maximum file size</label>
-              <p>Larger files keep a record, but no saved copy.</p>
+              <p>Applies to new copies. Larger files keep a record, but no saved copy.</p>
             </div>
             <label className="number-field">
               <input
@@ -220,7 +220,10 @@ export function SettingsPage({
           <div className="setting-line">
             <div>
               <label htmlFor="budget">Storage budget</label>
-              <p>When full, new files are logged without a copy.</p>
+              <p>
+                When full, new files are logged without a copy. History details can exceed this
+                budget.
+              </p>
             </div>
             <label className="number-field">
               <input
@@ -237,8 +240,9 @@ export function SettingsPage({
             </label>
           </div>
           <p className="settings-help">
-            Copies up to 50 MiB are supported. Keep a separate backup of important files; this
-            archive is removed if you uninstall the extension or clear the Chrome profile.
+            Changing limits preserves existing copies and lets active copies finish. Copies up to 50
+            MiB are supported. Keep a separate backup of important files; this archive is removed if
+            you uninstall the extension or clear the Chrome profile.
           </p>
         </section>
         <div className="save-settings">
